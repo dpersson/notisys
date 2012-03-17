@@ -4,7 +4,7 @@ After=syslog.target network.target
 
 [Service]
 Type=simple
-ExecStart=/home/daniel/notisys/notisys
+ExecStart=/home/daniel/notisys/notisys -o open,close /home/daniel/
 
 [Install]
 WantedBy=multi-user.target
