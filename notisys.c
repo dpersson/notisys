@@ -13,6 +13,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <execinfo.h>
 
 #include <linux/fanotify.h>
 
@@ -90,6 +91,25 @@ void synopsis(const char *progname, int status)
 	exit(status);
 }
 
+/* Obtain a backtrace and print it to stdout. */
+void print_trace (void)
+{
+    void *array[10];
+    size_t size;
+    char **strings;
+    size_t i;
+     
+    size = backtrace (array, 10);
+    strings = backtrace_symbols (array, size);
+     
+    printf ("Obtained %zd stack frames.\n", size);
+     
+    for (i = 0; i < size; i++)
+        printf ("%s\n", strings[i]);
+     
+    free (strings);
+}
+
 int main(int argc, char *argv[])
 {
 	int opt;
@@ -111,7 +131,7 @@ int main(int argc, char *argv[])
 	opt_child = opt_on_mount = opt_add_perms = opt_fast = false;
 	opt_ignore_perm = true;
 	opt_sleep = 0;
-
+    
 	while ((opt = getopt(argc, argv, "o:s:"FANOTIFY_ARGUMENTS)) != -1) {
 		switch(opt) {
 			case 'o': {
@@ -189,7 +209,7 @@ int main(int argc, char *argv[])
 
 	for (; optind < argc; optind++)
 		if (mark_object(fan_fd, argv[optind], AT_FDCWD, fan_mask, mark_flags) != 0)
-			goto fail;
+            goto fail;
 
 	FD_ZERO(&rfds);
 	FD_SET(fan_fd, &rfds);
@@ -275,6 +295,7 @@ int main(int argc, char *argv[])
 	return 0;
 
 fail:
-	fprintf(stderr, "%s\n", strerror(errno));
+	fprintf(stderr, "%s\n\n", strerror(errno));
+    print_trace();
 	return 1;
 }
