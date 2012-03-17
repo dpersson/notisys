@@ -1,0 +1,10 @@
+[Unit]
+Description=File notification system
+After=syslog.target network.target
+
+[Service]
+Type=simple
+ExecStart=/home/daniel/notisys/notisys
+
+[Install]
+WantedBy=multi-user.target
